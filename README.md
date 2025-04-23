@@ -1,4 +1,4 @@
-# Zaytracer (Raytracer in zig)
+# Zaytracer² (Raytracer in zig)
 
 ![Rendered image of the raytracer](render.png)
 
