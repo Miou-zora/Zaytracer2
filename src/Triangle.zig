@@ -18,7 +18,7 @@ vc: Vertex,
 normal: @Vector(4, f32) = undefined,
 text: *const Image,
 
-fn hits(self: *const Self, ray: *const Ray) HitRecord {
+pub fn hits(self: *const Self, ray: *const Ray, record: *?HitRecord, t_min: f32, t_max: f32) void {
     // TODO: add bvh + compute this only one time
     const a = self.va.position;
     const b = self.vb.position;
@@ -28,21 +28,25 @@ fn hits(self: *const Self, ray: *const Ray) HitRecord {
     const normal = self.normal;
     const t = zmath.dot3(normal, (a - ray.origin)) / zmath.dot3(normal, ray.direction);
 
-    if (t[0] < 0) {
-        return HitRecord.nil();
+    const dist = t[0];
+    if (dist < 0) {
+        return;
     }
 
     const hit_point = zmath.mulAdd(ray.direction, t, ray.origin);
+
+    if (!((record.* == null or dist < record.*.?.t) and dist > t_min and dist < t_max))
+        return;
 
     const aSubc = a - c;
     const cSubb = c - b;
 
     const u = zmath.dot3(zmath.cross3(bSuba, hit_point - a), normal)[0];
-    if (u < 0) return HitRecord.nil();
+    if (u < 0) return;
     const v = zmath.dot3(zmath.cross3(cSubb, hit_point - b), normal)[0];
-    if (v < 0) return HitRecord.nil();
+    if (v < 0) return;
     const w = zmath.dot3(zmath.cross3(aSubc, hit_point - c), normal)[0];
-    if (w < 0) return HitRecord.nil();
+    if (w < 0) return;
 
     const barycentric = zmath.f32x4(u, v, w, 0);
     const texCoord1 = zmath.f32x4(self.va.texCoord[0], self.vb.texCoord[0], self.vc.texCoord[0], 0); // Is it efficient to store this in tmp const?
@@ -55,9 +59,9 @@ fn hits(self: *const Self, ray: *const Ray) HitRecord {
     const color: rl.Color = self.text.rlColors[@min(posInImage[1] * cInt_to_usize + posInImage[0], self.text.rlColors.len - 1)];
     const colorRGB: ColorRGB = zmath.f32x4(@as(f32, @floatFromInt(color.r)), @as(f32, @floatFromInt(color.g)), @as(f32, @floatFromInt(color.b)), 0);
 
-    return .{
+    record.* = .{
         .hit = true,
-        .t = zmath.length3(hit_point - ray.origin)[0],
+        .t = dist,
         .intersection_point = hit_point,
         .normal = normal,
         .material = .{
@@ -76,11 +80,4 @@ pub fn pre_calc_normal(self: *Self) void {
     const cSuba = c - a;
 
     self.normal = zmath.normalize3(zmath.cross3(bSuba, cSuba));
-}
-
-pub fn fetch_closest_object(obj: *const Self, closest_hit: *HitRecord, ray: *const Ray, t_min: f32, t_max: f32) void {
-    const record = obj.hits(ray);
-    if (record.hit and (!closest_hit.hit or record.t < closest_hit.t) and record.t > t_min and record.t < t_max) {
-        closest_hit.* = record;
-    }
 }

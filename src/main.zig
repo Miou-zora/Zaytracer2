@@ -26,7 +26,7 @@ pub fn compute_lighting(intersection: Vec3, normal: Vec3, scene: *Scene, ray: *c
                     .origin = zmath.mulAdd(@as(Vec3, @splat(EPSILON)), normal, intersection),
                 };
                 const closest_hit = find_closest_intersection(scene, &new_ray, EPSILON, zmath.length3(item.position - intersection)[0]);
-                if (closest_hit.hit) {
+                if (closest_hit != null) {
                     continue;
                 }
                 const n_dot_l = zmath.dot3(normal, L);
@@ -53,10 +53,10 @@ pub fn compute_lighting(intersection: Vec3, normal: Vec3, scene: *Scene, ray: *c
     return zmath.clampFast(lighting, @as(ColorRGB, @splat(0)), @as(ColorRGB, @splat(255)));
 }
 
-fn find_closest_intersection(scene: *Scene, ray: *const Ray, t_min: f32, t_max: f32) HitRecord {
-    var closest_hit: HitRecord = HitRecord.nil();
+fn find_closest_intersection(scene: *Scene, ray: *const Ray, t_min: f32, t_max: f32) ?HitRecord {
+    var closest_hit: ?HitRecord = null;
     for (scene.objects.items) |object|
-        object.fetch_closest_object(&closest_hit, ray, t_min, t_max);
+        object.hits(ray, &closest_hit, t_min, t_max);
     return closest_hit;
 }
 
@@ -65,11 +65,12 @@ fn reflect(v: Vec3, n: Vec3) Vec3 {
 }
 
 fn get_pixel_color(ray: *const Ray, scene: *Scene, height: u32, width: u32, recursion_depth: usize) ColorRGB {
-    const closest_hit = find_closest_intersection(scene, ray, std.math.floatMin(f32), std.math.floatMax(f32));
+    const closest_hit_opt = find_closest_intersection(scene, ray, std.math.floatMin(f32), std.math.floatMax(f32));
 
-    if (!closest_hit.hit) {
+    if (closest_hit_opt == null) {
         return zmath.f32x4s(0);
     }
+    const closest_hit = closest_hit_opt.?;
     const norm = zmath.normalize3(closest_hit.normal);
     const inter = closest_hit.intersection_point;
     const material = closest_hit.material;
