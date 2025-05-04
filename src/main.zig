@@ -1,21 +1,21 @@
 const std = @import("std");
 const Vec3 = @import("Vec3.zig").Vec3;
 const Pt3 = @import("Pt3.zig").Pt3;
-const Ray = @import("Ray.zig").Ray;
-const Camera = @import("Camera.zig").Camera;
+const Ray = @import("Ray.zig");
+const Camera = @import("Camera.zig");
 const qoi = @import("qoi");
-const Light = @import("Light.zig").Light;
-const AmbientLight = @import("AmbientLight.zig").AmbientLight;
-const HitRecord = @import("HitRecord.zig").HitRecord;
+const Light = @import("Light.zig");
+const AmbientLight = @import("AmbientLight.zig");
+const HitRecord = @import("HitRecord.zig");
 const Scene = @import("Scene.zig");
 const ColorRGB = @import("ColorRGB.zig").ColorRGB;
-const Material = @import("Material.zig").Material;
+const Material = @import("Material.zig");
 const Config = @import("Config.zig").Config;
 const zmath = @import("zmath");
 
 const EPSILON: f32 = 0.00001;
 
-pub fn compute_lighting(intersection: Vec3, normal: Vec3, scene: *Scene.Scene, ray: Ray, material: Material) ColorRGB {
+pub fn compute_lighting(intersection: Vec3, normal: Vec3, scene: *Scene, ray: Ray, material: Material) ColorRGB {
     var lighting: ColorRGB = zmath.f32x4(0, 0, 0, 255);
     for (scene.lights.items) |light| {
         switch (light) {
@@ -49,7 +49,7 @@ pub fn compute_lighting(intersection: Vec3, normal: Vec3, scene: *Scene.Scene, r
     return zmath.clampFast(lighting, @as(ColorRGB, @splat(0)), @as(ColorRGB, @splat(255)));
 }
 
-fn find_closest_intersection(scene: *Scene.Scene, ray: Ray, t_min: f32, t_max: f32) HitRecord {
+fn find_closest_intersection(scene: *Scene, ray: Ray, t_min: f32, t_max: f32) HitRecord {
     var closest_hit: HitRecord = HitRecord.nil();
     for (scene.objects.items) |object|
         object.fetch_closest_object(&closest_hit, ray, t_min, t_max);
@@ -60,7 +60,7 @@ fn reflect(v: Vec3, n: Vec3) Vec3 {
     return zmath.mulAdd(n * @as(Vec3, @splat(2)), zmath.dot3(v, n), -v);
 }
 
-fn get_pixel_color(ray: Ray, scene: *Scene.Scene, height: u32, width: u32, recursion_depth: usize) ColorRGB {
+fn get_pixel_color(ray: Ray, scene: *Scene, height: u32, width: u32, recursion_depth: usize) ColorRGB {
     const closest_hit = find_closest_intersection(scene, ray, std.math.floatMin(f32), std.math.floatMax(f32));
 
     if (!closest_hit.hit) {
@@ -93,7 +93,7 @@ fn get_pixel_color(ray: Ray, scene: *Scene.Scene, height: u32, width: u32, recur
 
 var current_height: std.atomic.Value(u32) = std.atomic.Value(u32).init(0);
 
-fn calculate_image_worker(pixels: []qoi.Color, scene: *Scene.Scene, height: u32, width: u32) !void {
+fn calculate_image_worker(pixels: []qoi.Color, scene: *Scene, height: u32, width: u32) !void {
     const recursion_depth = 20;
     const samples_per_pixel: u32 = scene.camera.antialiasing_samples;
     var rng = std.Random.DefaultPrng.init(0);
@@ -122,7 +122,7 @@ fn calculate_image_worker(pixels: []qoi.Color, scene: *Scene.Scene, height: u32,
     }
 }
 
-fn calculate_image(pixels: []qoi.Color, scene: *Scene.Scene, height: u32, width: u32, allocator: std.mem.Allocator) !void {
+fn calculate_image(pixels: []qoi.Color, scene: *Scene, height: u32, width: u32, allocator: std.mem.Allocator) !void {
     const num_threads = try std.Thread.getCpuCount();
     var threads = try allocator.alloc(std.Thread, num_threads);
 
@@ -140,7 +140,7 @@ pub fn main() !void {
 
     const config = try Config.fromFilePath("config.json", allocator);
 
-    var scene = Scene.Scene.init(allocator, config.camera);
+    var scene = Scene.init(allocator, config.camera);
     defer scene.deinit();
 
     for (config.triangles) |obj| {
@@ -172,5 +172,5 @@ pub fn main() !void {
 }
 
 test {
-    std.testing.refAllDecls(@This());
+    std.testing.refAllDeclsRecursive(@This());
 }
