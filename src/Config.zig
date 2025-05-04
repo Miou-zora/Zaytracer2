@@ -135,6 +135,7 @@ pub const Config = struct {
                 .vc = load_vertex(obj.vc),
                 .text = &conf.assets[obj.textIdx],
             };
+            conf.triangles[i].pre_calc_normal();
         }
         for (proxy.lights, 0..) |obj, i| {
             if (obj.point) |item| {

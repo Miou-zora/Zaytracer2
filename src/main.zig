@@ -15,13 +15,17 @@ const zmath = @import("zmath");
 
 const EPSILON: f32 = 0.00001;
 
-pub fn compute_lighting(intersection: Vec3, normal: Vec3, scene: *Scene, ray: Ray, material: Material) ColorRGB {
+pub fn compute_lighting(intersection: Vec3, normal: Vec3, scene: *Scene, ray: *const Ray, material: Material) ColorRGB {
     var lighting: ColorRGB = zmath.f32x4(0, 0, 0, 255);
     for (scene.lights.items) |light| {
         switch (light) {
             .point_light => |item| {
                 const L = zmath.normalize3(item.position - intersection);
-                const closest_hit = find_closest_intersection(scene, Ray{ .direction = L, .origin = zmath.mulAdd(@as(Vec3, @splat(EPSILON)), normal, intersection) }, EPSILON, zmath.length3(item.position - intersection)[0]);
+                const new_ray = Ray{
+                    .direction = L,
+                    .origin = zmath.mulAdd(@as(Vec3, @splat(EPSILON)), normal, intersection),
+                };
+                const closest_hit = find_closest_intersection(scene, &new_ray, EPSILON, zmath.length3(item.position - intersection)[0]);
                 if (closest_hit.hit) {
                     continue;
                 }
@@ -49,7 +53,7 @@ pub fn compute_lighting(intersection: Vec3, normal: Vec3, scene: *Scene, ray: Ra
     return zmath.clampFast(lighting, @as(ColorRGB, @splat(0)), @as(ColorRGB, @splat(255)));
 }
 
-fn find_closest_intersection(scene: *Scene, ray: Ray, t_min: f32, t_max: f32) HitRecord {
+fn find_closest_intersection(scene: *Scene, ray: *const Ray, t_min: f32, t_max: f32) HitRecord {
     var closest_hit: HitRecord = HitRecord.nil();
     for (scene.objects.items) |object|
         object.fetch_closest_object(&closest_hit, ray, t_min, t_max);
@@ -60,7 +64,7 @@ fn reflect(v: Vec3, n: Vec3) Vec3 {
     return zmath.mulAdd(n * @as(Vec3, @splat(2)), zmath.dot3(v, n), -v);
 }
 
-fn get_pixel_color(ray: Ray, scene: *Scene, height: u32, width: u32, recursion_depth: usize) ColorRGB {
+fn get_pixel_color(ray: *const Ray, scene: *Scene, height: u32, width: u32, recursion_depth: usize) ColorRGB {
     const closest_hit = find_closest_intersection(scene, ray, std.math.floatMin(f32), std.math.floatMax(f32));
 
     if (!closest_hit.hit) {
@@ -78,11 +82,12 @@ fn get_pixel_color(ray: Ray, scene: *Scene, height: u32, width: u32, recursion_d
 
     const R = reflect(-ray.direction, norm);
     const new_origin = zmath.mulAdd(@as(Vec3, @splat(EPSILON)), norm, closest_hit.intersection_point);
+    const new_ray = Ray{
+        .direction = R,
+        .origin = new_origin,
+    };
     const reflected_color = get_pixel_color(
-        Ray{
-            .direction = R,
-            .origin = new_origin,
-        },
+        &new_ray,
         scene,
         height,
         width,
@@ -109,7 +114,7 @@ fn calculate_image_worker(pixels: []qoi.Color, scene: *Scene, height: u32, width
                 const scaled_x: f32 = (@as(f32, @floatFromInt(x)) + random_x - 0.5) / @as(f32, @floatFromInt(width - 1));
                 const scaled_y: f32 = (@as(f32, @floatFromInt((height - 1) - y)) + random_y - 0.5) / @as(f32, @floatFromInt(height - 1));
                 const jittered_ray: Ray = scene.camera.createRay(scaled_x, scaled_y);
-                pixel_color += get_pixel_color(jittered_ray, scene, height, width, recursion_depth);
+                pixel_color += get_pixel_color(&jittered_ray, scene, height, width, recursion_depth);
             }
             pixel_color /= @as(Vec3, @splat(@as(f32, @floatFromInt(samples_per_pixel))));
             pixels[x + y * width] = .{
@@ -123,7 +128,8 @@ fn calculate_image_worker(pixels: []qoi.Color, scene: *Scene, height: u32, width
 }
 
 fn calculate_image(pixels: []qoi.Color, scene: *Scene, height: u32, width: u32, allocator: std.mem.Allocator) !void {
-    const num_threads = try std.Thread.getCpuCount();
+    // const num_threads = try std.Thread.getCpuCount();
+    const num_threads = 1;
     var threads = try allocator.alloc(std.Thread, num_threads);
 
     for (0..num_threads) |i|
