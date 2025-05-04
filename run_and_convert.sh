@@ -8,9 +8,12 @@
 
 shopt -s expand_aliases
 
-set -xe
+# set -xe
 
 alias time="$(which time) -f '\t%E real,\t%U user,\t%S sys,\t%K amem,\t%M mmem'"
+
+time ./zig-out/bin/Zaytracer
+ffmpeg -i out.qoi out.png -hide_banner -loglevel error -y
 
 while inotifywait -e modify ./config.json; do
     time ./zig-out/bin/Zaytracer

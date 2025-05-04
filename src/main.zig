@@ -2,14 +2,11 @@ const std = @import("std");
 const Vec3 = @import("Vec3.zig").Vec3;
 const Pt3 = @import("Pt3.zig").Pt3;
 const Ray = @import("Ray.zig").Ray;
-const Sphere = @import("Sphere.zig").Sphere;
 const Camera = @import("Camera.zig").Camera;
 const qoi = @import("qoi");
 const Light = @import("Light.zig").Light;
 const AmbientLight = @import("AmbientLight.zig").AmbientLight;
-const Plane = @import("Plane.zig").Plane;
 const HitRecord = @import("HitRecord.zig").HitRecord;
-const Cylinder = @import("Cylinder.zig").Cylinder;
 const Scene = @import("Scene.zig");
 const ColorRGB = @import("ColorRGB.zig").ColorRGB;
 const Material = @import("Material.zig").Material;
@@ -146,7 +143,7 @@ pub fn main() !void {
     var scene = Scene.Scene.init(allocator, config.camera);
     defer scene.deinit();
 
-    for (config.objects) |obj| {
+    for (config.triangles) |obj| {
         try scene.objects.append(obj);
     }
     for (config.lights) |obj| {
