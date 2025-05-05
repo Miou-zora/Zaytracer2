@@ -130,8 +130,8 @@ fn calculate_image_worker(pixels: []qoi.Color, scene: *Scene, height: u32, width
 }
 
 fn calculate_image(pixels: []qoi.Color, scene: *Scene, height: u32, width: u32, allocator: std.mem.Allocator) !void {
-    // const num_threads = try std.Thread.getCpuCount();
-    const num_threads = 1;
+    const num_threads = try std.Thread.getCpuCount();
+    // const num_threads = 1;
     var threads = try allocator.alloc(std.Thread, num_threads);
 
     for (0..num_threads) |i|
