@@ -20,7 +20,6 @@ jobs:
       - uses: mlugg/setup-zig@v1
         with:
           version: 0.14.0
-      - run: sudo apt-get install -y libasound2-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev libwayland-dev libxkbcommon-dev
       - run: zig build -Doptimize=${{matrix.build_type}} --summary all
 
   test:
@@ -35,7 +34,6 @@ jobs:
       - uses: mlugg/setup-zig@v1
         with:
           version: 0.14.0
-      - run: sudo apt-get install -y libasound2-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev libwayland-dev libxkbcommon-dev
       - run: zig build -Doptimize=${{matrix.build_type}} test --summary all
 
   lint:
@@ -46,5 +44,4 @@ jobs:
       - uses: mlugg/setup-zig@v1
         with:
           version: 0.14.0
-      - run: sudo apt-get install -y libasound2-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev libwayland-dev libxkbcommon-dev
       - run: zig fmt --check .

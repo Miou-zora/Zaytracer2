@@ -119,8 +119,10 @@ pub fn main() !void {
 
     const config = try Config.fromFilePath("config.json", allocator);
 
-    var scene = Scene.init(allocator, config.camera);
+    var scene = try Scene.init(allocator, config.camera);
     defer scene.deinit();
+
+    std.debug.print("scene: {any}\n", .{scene.cube_obj.meshes[0].indices});
 
     const height: u32 = config.camera.height;
     const width: u32 = config.camera.width;

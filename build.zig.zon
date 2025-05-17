@@ -13,6 +13,10 @@
             .url = "git+https://github.com/ikskuh/zig-qoi.git#b97be7d14fd7c421fe55f31a37c8d4ba2826ac6c",
             .hash = "qoi-0.1.0-5Hmo8rpqAAD1pnE4OYX2tdvxLupff9nkjBGxuxVNtky8",
         },
+        .obj = .{
+            .url = "git+https://github.com/chip2n/zig-obj.git#4ad4f6463b553395a1cd5388846d8623f350bf8b",
+            .hash = "obj-3.0.0-v8OfipDLAAAfZnwVIVO_8cb6ZWpkxWK6-HTkkF-k6WuO",
+        },
     },
 
     .paths = .{
