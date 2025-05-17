@@ -13,10 +13,6 @@
             .url = "git+https://github.com/ikskuh/zig-qoi.git#b97be7d14fd7c421fe55f31a37c8d4ba2826ac6c",
             .hash = "qoi-0.1.0-5Hmo8rpqAAD1pnE4OYX2tdvxLupff9nkjBGxuxVNtky8",
         },
-        .raylib_zig = .{
-            .url = "git+https://github.com/Not-Nik/raylib-zig.git#0de5f8aed0565f2dbd8bc6851499c85df9e73534",
-            .hash = "raylib_zig-5.6.0-dev-KE8REGMrBQCs5X69dptNzjw9Z7MYM1fgdaKrnuKf8zyr",
-        },
     },
 
     .paths = .{
