@@ -1,3 +1,0 @@
-[submodule "libs/zgamedev"]
-	path = libs/zgamedev
-	url = git@github.com:zig-gamedev/zig-gamedev.git

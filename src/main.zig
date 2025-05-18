@@ -11,24 +11,38 @@ const Vec = zmath.Vec;
 
 const EPSILON: f32 = 0.00001;
 
+const PointLight = struct {
+    position: Vec,
+    color: Vec,
+    intensity: f32,
+};
+
 pub fn compute_lighting(intersection: Vec, normal: Vec, scene: *Scene, ray: *const Ray) ColorRGB {
-    const lighting: ColorRGB = zmath.f32x4(200, 200, 200, 255);
-    _ = intersection;
-    _ = normal;
-    _ = scene;
+    var lighting: ColorRGB = zmath.f32x4(50, 50, 50, 255);
+    const item = PointLight{ .color = .{ 255, 255, 255, 255 }, .position = .{ 1, 1, 1, 0 }, .intensity = 40 };
+    const L = zmath.normalize3(item.position - intersection);
+    const new_ray = Ray{
+        .direction = L,
+        .origin = zmath.mulAdd(@as(Vec, @splat(EPSILON)), normal, intersection),
+    };
+    const closest_hit = find_closest_intersection(scene, &new_ray, EPSILON, zmath.length3(item.position - intersection)[0]);
+    if (closest_hit != null) {
+        return zmath.clampFast(lighting, @as(ColorRGB, @splat(0)), @as(ColorRGB, @splat(255)));
+    }
+    const n_dot_l = zmath.dot3(normal, L);
+    const em = (n_dot_l / (zmath.length3(normal) * zmath.length3(L))) * @as(Vec, @splat(item.intensity)); // TODO: store item intensity cleanly
+    if (em[0] < 0) {
+        return zmath.clampFast(lighting, @as(ColorRGB, @splat(0)), @as(ColorRGB, @splat(255)));
+    }
+    lighting += item.color * em;
     _ = ray;
     return zmath.clampFast(lighting, @as(ColorRGB, @splat(0)), @as(ColorRGB, @splat(255)));
 }
 
 fn find_closest_intersection(scene: *Scene, ray: *const Ray, t_min: f32, t_max: f32) ?HitRecord {
-    _ = scene;
-    _ = ray;
-    _ = t_min;
-    _ = t_max;
-
-    const closest_hit: ?HitRecord = null;
-    // for (scene.objects.items) |object|
-    //     object.hits(ray, &closest_hit, t_min, t_max);
+    var closest_hit: ?HitRecord = null;
+    for (scene.triangles.items) |object|
+        object.hits(ray, &closest_hit, t_min, t_max);
     return closest_hit;
 }
 
@@ -122,10 +136,16 @@ pub fn main() !void {
     var scene = try Scene.init(allocator, config.camera);
     defer scene.deinit();
 
-    std.debug.print("scene: {any}\n", .{scene.cube_obj.meshes[0].indices});
+    // try scene.load_obj("assets/cube.obj", zmath.f32x4(-4, -3, 10, 0));
+    try scene.load_obj("assets/monkey.obj", zmath.f32x4(-1, -1, 3, 0));
 
     const height: u32 = config.camera.height;
     const width: u32 = config.camera.width;
+
+    // for (scene.triangles.items) |tri|
+    //     std.debug.print("{any}\n", .{tri});
+
+    std.debug.print("Number of triangles to compute: {}\n", .{scene.triangles.items.len});
 
     var image = qoi.Image{
         .width = width,

@@ -1,8 +1,8 @@
 {
     "camera": {
-        "width": 1920,
-        "height": 1080,
+        "width": 1080,
+        "height": 720,
         "fov": 50,
-        "antialiasing_samples": 10
+        "antialiasing_samples": 4
     }
 }
