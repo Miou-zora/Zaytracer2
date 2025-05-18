@@ -95,9 +95,18 @@ fn calculate_image_worker(pixels: []qoi.Color, scene: *Scene, height: u32, width
             return;
         for (0..width) |x| {
             var pixel_color: ColorRGB = zmath.f32x4s(0);
-            for (0..samples_per_pixel) |_| {
-                const random_x: f32 = rand.float(f32);
-                const random_y: f32 = rand.float(f32);
+            if (samples_per_pixel != 1) {
+                for (0..samples_per_pixel) |_| {
+                    const random_x: f32 = rand.float(f32);
+                    const random_y: f32 = rand.float(f32);
+                    const scaled_x: f32 = (@as(f32, @floatFromInt(x)) + random_x - 0.5) / @as(f32, @floatFromInt(width - 1));
+                    const scaled_y: f32 = (@as(f32, @floatFromInt((height - 1) - y)) + random_y - 0.5) / @as(f32, @floatFromInt(height - 1));
+                    const jittered_ray: Ray = scene.camera.createRay(scaled_x, scaled_y);
+                    pixel_color += get_pixel_color(&jittered_ray, scene, height, width, recursion_depth);
+                }
+            } else {
+                const random_x: f32 = 0.5;
+                const random_y: f32 = 0.5;
                 const scaled_x: f32 = (@as(f32, @floatFromInt(x)) + random_x - 0.5) / @as(f32, @floatFromInt(width - 1));
                 const scaled_y: f32 = (@as(f32, @floatFromInt((height - 1) - y)) + random_y - 0.5) / @as(f32, @floatFromInt(height - 1));
                 const jittered_ray: Ray = scene.camera.createRay(scaled_x, scaled_y);
