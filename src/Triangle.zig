@@ -20,6 +20,7 @@ pub fn hits(self: *const Self, ray: *const Ray, record: *?HitRecord, t_min: f32,
     const aSubc = a - c;
 
     const normal = self.normal;
+    const reversed_normal = -normal;
     const t = zmath.dot3(normal, (a - ray.origin)) / zmath.dot3(normal, ray.direction);
 
     const dist = t[0];
@@ -42,7 +43,7 @@ pub fn hits(self: *const Self, ray: *const Ray, record: *?HitRecord, t_min: f32,
     record.* = .{
         .t = dist,
         .intersection_point = hit_point,
-        .normal = normal,
+        .normal = reversed_normal,
     };
 }
 

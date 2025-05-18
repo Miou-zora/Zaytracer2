@@ -19,7 +19,7 @@ const PointLight = struct {
 
 pub fn compute_lighting(intersection: Vec, normal: Vec, scene: *Scene, ray: *const Ray) ColorRGB {
     var lighting: ColorRGB = zmath.f32x4(50, 50, 50, 255);
-    const item = PointLight{ .color = .{ 255, 255, 255, 255 }, .position = .{ 1, 1, 1, 0 }, .intensity = 40 };
+    const item = PointLight{ .color = .{ 255, 255, 255, 255 }, .position = .{ -0.5, 1, 0, 0 }, .intensity = 1 };
     const L = zmath.normalize3(item.position - intersection);
     const new_ray = Ray{
         .direction = L,
@@ -136,8 +136,8 @@ pub fn main() !void {
     var scene = try Scene.init(allocator, config.camera);
     defer scene.deinit();
 
-    // try scene.load_obj("assets/cube.obj", zmath.f32x4(-4, -3, 10, 0));
-    try scene.load_obj("assets/monkey.obj", zmath.f32x4(-1, -1, 3, 0));
+    try scene.load_obj("assets/cube.obj", zmath.f32x4(-1.5, -1.5, 3, 0));
+    try scene.load_obj("assets/monkey.obj", zmath.f32x4(0, -0.2, 2.2, 0));
 
     const height: u32 = config.camera.height;
     const width: u32 = config.camera.width;

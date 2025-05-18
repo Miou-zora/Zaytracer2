@@ -3,6 +3,6 @@
         "width": 1080,
         "height": 720,
         "fov": 50,
-        "antialiasing_samples": 4
+        "antialiasing_samples": 1
     }
 }

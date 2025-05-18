@@ -37,33 +37,37 @@ pub fn load_obj(self: *Self, filepath: []const u8, offset: Vec) !void {
 
     for (obj_data.meshes) |mesh| {
         var idx: usize = 0;
+        var normal = Vec{ 0, 0, 0, 0 };
+        for (0..3) |i|
+            normal += Vec{
+                obj_data.normals[mesh.indices[idx + i].normal.? * 3],
+                obj_data.normals[mesh.indices[idx + i].normal.? * 3 + 1],
+                obj_data.normals[mesh.indices[idx + i].normal.? * 3 + 2],
+                0,
+            };
+        normal /= @splat(3);
         while (idx < mesh.indices.len) {
             // std.debug.print("indices: {any}\n", .{mesh.indices[idx .. idx + 3]});
             var tri: Triangle = .{
                 .va = .{
                     obj_data.vertices[mesh.indices[idx].vertex.? * 3],
                     obj_data.vertices[mesh.indices[idx].vertex.? * 3 + 1],
-                    obj_data.vertices[mesh.indices[idx].vertex.? * 3 + 2],
+                    -obj_data.vertices[mesh.indices[idx].vertex.? * 3 + 2],
                     0,
                 },
                 .vb = .{
                     obj_data.vertices[mesh.indices[idx + 1].vertex.? * 3],
                     obj_data.vertices[mesh.indices[idx + 1].vertex.? * 3 + 1],
-                    obj_data.vertices[mesh.indices[idx + 1].vertex.? * 3 + 2],
+                    -obj_data.vertices[mesh.indices[idx + 1].vertex.? * 3 + 2],
                     0,
                 },
                 .vc = .{
                     obj_data.vertices[mesh.indices[idx + 2].vertex.? * 3],
                     obj_data.vertices[mesh.indices[idx + 2].vertex.? * 3 + 1],
-                    obj_data.vertices[mesh.indices[idx + 2].vertex.? * 3 + 2],
+                    -obj_data.vertices[mesh.indices[idx + 2].vertex.? * 3 + 2],
                     0,
                 },
-                .normal = .{
-                    obj_data.normals[mesh.indices[idx].normal.? * 3],
-                    obj_data.normals[mesh.indices[idx].normal.? * 3 + 1],
-                    obj_data.normals[mesh.indices[idx].normal.? * 3 + 2],
-                    0,
-                },
+                .normal = normal,
             };
             tri.transpose(offset);
             tri.pre_calc_normal();
