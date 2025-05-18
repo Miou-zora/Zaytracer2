@@ -1,11 +1,11 @@
 const std = @import("std");
-const Camera = @import("Camera.zig").Camera;
-const Material = @import("Material.zig").Material;
+const Camera = @import("Camera.zig");
+const Material = @import("Material.zig");
 const Scene = @import("Scene.zig");
-const AmbientLight = @import("AmbientLight.zig").AmbientLight;
-const PointLight = @import("Light.zig").Light;
+const AmbientLight = @import("AmbientLight.zig");
+const PointLight = @import("Light.zig");
 const Light = Scene.SceneLight;
-const Vertex = @import("Vertex.zig").Vertex;
+const Vertex = @import("Vertex.zig");
 const Image = Scene.Image;
 const rl = @import("raylib");
 const ColorRGB = @import("ColorRGB.zig").ColorRGB;
@@ -135,6 +135,7 @@ pub const Config = struct {
                 .vc = load_vertex(obj.vc),
                 .text = &conf.assets[obj.textIdx],
             };
+            conf.triangles[i].pre_calc_normal();
         }
         for (proxy.lights, 0..) |obj, i| {
             if (obj.point) |item| {
