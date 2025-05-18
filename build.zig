@@ -13,11 +13,10 @@ pub fn build(b: *std.Build) void {
 
     const zmath = b.dependency("zmath", .{ .optimize = optimize, .target = target });
     const qoi = b.dependency("qoi", .{ .optimize = optimize, .target = target });
-    const raylib = b.dependency("raylib_zig", .{ .optimize = optimize, .target = target });
+    const obj = b.dependency("obj", .{ .optimize = optimize, .target = target });
     exe.root_module.addImport("zmath", zmath.module("root"));
     exe.root_module.addImport("qoi", qoi.module("qoi"));
-    exe.root_module.addImport("raylib", raylib.module("raylib"));
-    exe.linkLibrary(raylib.artifact("raylib"));
+    exe.root_module.addImport("obj", obj.module("obj"));
     exe.linkLibC();
 
     b.installArtifact(exe);
@@ -41,9 +40,7 @@ pub fn build(b: *std.Build) void {
 
     exe_unit_tests.root_module.addImport("zmath", zmath.module("root"));
     exe_unit_tests.root_module.addImport("qoi", qoi.module("qoi"));
-    exe_unit_tests.root_module.addImport("raylib", raylib.module("raylib"));
-    exe_unit_tests.linkLibrary(raylib.artifact("raylib"));
-    exe_unit_tests.linkLibC();
+    exe_unit_tests.root_module.addImport("obj", obj.module("obj"));
 
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
 

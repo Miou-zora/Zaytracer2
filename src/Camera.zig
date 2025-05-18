@@ -1,8 +1,9 @@
-const Pt3 = @import("Pt3.zig").Pt3;
+const std = @import("std");
+
 const Rect3 = @import("Rect3.zig");
 const Ray = @import("Ray.zig");
-const std = @import("std");
 const zmath = @import("zmath");
+const Vec = zmath.Vec;
 
 const Self = @This();
 
